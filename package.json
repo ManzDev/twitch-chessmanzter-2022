@@ -1,0 +1,34 @@
+{
+  "name": "twitch-chessmanzter-2022",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "rm -rf dist && vite build",
+    "preview": "vite preview",
+    "deploy": "gh-pages -d dist"
+  },
+  "devDependencies": {
+    "@stylelint/postcss-css-in-js": "^0.38.0",
+    "eslint": "^8.16.0",
+    "eslint-config-standard": "17.0.0-1",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "14.0.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "gh-pages": "^4.0.0",
+    "postcss": "^8.4.14",
+    "postcss-html": "^1.4.1",
+    "postcss-jsx": "^0.36.4",
+    "postcss-nesting": "^10.1.7",
+    "postcss-styled": "^0.34.0",
+    "postcss-syntax": "^0.36.2",
+    "stylelint": "14.6.1",
+    "stylelint-config-standard": "^25.0.0",
+    "vite": "^2.9.9"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "dependencies": {
+    "dat.gui": "^0.7.9"
+  }
+}
