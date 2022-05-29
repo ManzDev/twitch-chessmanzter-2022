@@ -35,12 +35,18 @@ class ChessPiece extends HTMLElement {
     this.render();
   }
 
-  render() {
+  changeTheme(theme = "pixel", ext = ".png") {
     const piece = PIECES[this.type.toUpperCase()];
+    const img = this.shadowRoot.querySelector(".piece img");
+    img.src = `pieces/${theme}/${this.color}-${piece}${ext}`;
+  }
+
+  render() {
+    const piece = PIECES[this.type.toUpperCase()] + ".png";
     this.shadowRoot.innerHTML = /* html */`
     <style>${ChessPiece.styles}</style>
     <div class="piece">
-      <img src="pieces/${this.color}-${piece}.png" alt="${this.color} ${piece}" />
+      <img src="pieces/pixel/${this.color}-${piece}" alt="${this.color} ${piece}" />
     </div>`;
   }
 }

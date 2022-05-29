@@ -1,8 +1,5 @@
-import * as dat from "dat.gui";
 import initialLocations from "../data/initialLocations.json";
 import "./ChessCell.js";
-
-const gui = new dat.GUI();
 
 class ChessBoard extends HTMLElement {
   constructor() {
@@ -76,6 +73,14 @@ class ChessBoard extends HTMLElement {
 
   connectedCallback() {
     this.render();
+  }
+
+  changePieces(theme, ext = "png") {
+    const cells = [...this.shadowRoot.querySelectorAll("chess-cell")];
+    cells.forEach(cell => {
+      const piece = cell.shadowRoot.querySelector("chess-piece");
+      piece && piece.changeTheme(theme, ext);
+    });
   }
 
   renderCells() {
