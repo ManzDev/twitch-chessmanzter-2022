@@ -20,7 +20,30 @@ class ChessCell extends HTMLElement {
         height: var(--cell-size);
         box-sizing: border-box;
       }
+
+      :host(.selected) {
+        background: red;
+      }
+
+      :host(.valid) {
+        background: green;
+      }
+
+      :host(.selected) chess-piece {
+      }
     `;
+  }
+
+  get id() {
+    return this.x + this.y;
+  }
+
+  select() {
+    this.classList.add("selected");
+  }
+
+  unselect() {
+    this.classList.remove("selected");
   }
 
   connectedCallback() {

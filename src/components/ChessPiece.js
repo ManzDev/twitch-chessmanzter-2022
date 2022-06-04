@@ -35,6 +35,18 @@ class ChessPiece extends HTMLElement {
     this.render();
   }
 
+  get id() {
+    return this.type;
+  }
+
+  isWhite() {
+    return this.color === "white";
+  }
+
+  isBlack() {
+    return this.color === "black";
+  }
+
   changeTheme(theme = "pixel", ext = ".png") {
     const piece = PIECES[this.type.toUpperCase()];
     const img = this.shadowRoot.querySelector(".piece img");

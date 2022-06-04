@@ -8,7 +8,7 @@ const gui = new dat.GUI();
 
 const options = {
   pieces: "pixel",
-  theme: "wood"
+  theme: "manzdev"
 };
 
 gui.add(options, "pieces", ["pixel", "normal"])
@@ -16,5 +16,13 @@ gui.add(options, "pieces", ["pixel", "normal"])
     const ext = data === "pixel" ? ".png" : ".svg";
     board.changePieces(data, ext);
   });
+
+gui.add(options, "theme", ["wood", "manzdev", "forest", "classic", "ocean"])
+  .onChange(data => {
+    board.classList.remove("wood", "manzdev", "forest", "classic", "ocean");
+    board.classList.add(data);
+  });
+
+gui.close();
 
 // { K: "♔", Q: "♕", R: "♖", B: "♗", N: "♘", P: "♙", k: "♚", q: "♛", r: "♜", b: "♝", n: "♞", p: "♟" };

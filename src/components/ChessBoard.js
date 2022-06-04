@@ -5,6 +5,25 @@ class ChessBoard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    this.PIECES = [];
+    this.movements = [];
+    this.stage = 0; // 0: select, 1: move, 2: convert-piece
+  }
+
+  isWhiteTurn() {
+    return this.movements.length % 2 === 0;
+  }
+
+  isBlackTurn() {
+    return this.movements.length % 2 !== 0;
+  }
+
+  isSelectStage() {
+    return this.stage === 0;
+  }
+
+  isTargetStage() {
+    return this.stage === 1;
   }
 
   static get styles() {
@@ -13,11 +32,39 @@ class ChessBoard extends HTMLElement {
         --piece-size: 54px;
         --cell-size: 72px;
         --board-size: calc(var(--cell-size) * 8);
+        --border-style: 0;
 
+        user-select: none;
+      }
+
+      :host(.wood) {
         --color-odd: #eed2aa;
         --color-even: #90502f;
         --frame-color: #62351f;
-        --border-style: 0;
+      }
+
+      :host(.manzdev) {
+        --color-odd: #f566e8;
+        --color-even: #7135a4;
+        --frame-color: #421768;
+      }
+
+      :host(.forest) {
+        --color-odd: #ebecd0;
+        --color-even: #779556;
+        --frame-color: #3d5226;
+      }
+
+      :host(.classic) {
+        --color-odd: #e7e6e4;
+        --color-even: #181713;
+        --frame-color: #000000;
+      }
+
+      :host(.ocean) {
+        --color-odd: #99ccff;
+        --color-even: #026498;
+        --frame-color: #09364e;
       }
 
       .frame {
@@ -73,6 +120,7 @@ class ChessBoard extends HTMLElement {
 
   connectedCallback() {
     this.render();
+    this.classList.add("manzdev");
   }
 
   changePieces(theme, ext = "png") {
@@ -84,20 +132,63 @@ class ChessBoard extends HTMLElement {
   }
 
   renderCells() {
-    const cells = [];
     for (let y = 0; y < 8; y++) {
       for (let x = 0; x < 8; x++) {
-        cells.push(this.renderCell(y, x));
+        this.renderCell(y, x);
       }
     }
-    return cells.join("");
   }
 
   renderCell(y, x) {
+    const board = this.shadowRoot.querySelector(".board");
     const col = String.fromCharCode(97 + x);
     const row = 9 - (y + 1);
-    return /* html */`
-      <chess-cell x="${col}" y="${row}"></chess-cell>`;
+    const cell = document.createElement("chess-cell");
+    cell.setAttribute("x", col);
+    cell.setAttribute("y", row);
+    cell.addEventListener("click", () => this.onClick(cell));
+    cell.addEventListener("contextmenu", (ev) => this.onRightClick(ev, cell));
+    board.appendChild(cell);
+  }
+
+  onRightClick(ev, cell) {
+    ev.preventDefault();
+    cell.classList.add("valid");
+  }
+
+  onClick(cell) {
+    const piece = cell.shadowRoot.querySelector("chess-piece");
+    const isCancel = cell.classList.contains("selected");
+    const isTargetValid = cell.classList.contains("valid");
+
+    // Select Source
+    if (piece && this.isSelectStage()) this.selectPiece(cell);
+    // Cancel Source
+    else if (isCancel && this.isTargetStage()) this.reset();
+    // Select Target
+    else if (this.isTargetStage() && isTargetValid) this.selectTarget(cell);
+  }
+
+  selectPiece(cell) {
+    const sourcePiece = cell.shadowRoot.querySelector("chess-piece");
+    const isCorrectWhitePiece = this.isWhiteTurn() && sourcePiece.isWhite();
+    const isCorrectBlackPiece = this.isBlackTurn() && sourcePiece.isBlack();
+
+    const isValidPiece = isCorrectWhitePiece || isCorrectBlackPiece;
+    if (isValidPiece) {
+      cell.select();
+      this.stage = 1;
+    }
+  }
+
+  reset() {
+    const cells = [...this.shadowRoot.querySelectorAll("chess-cell")];
+    cells.forEach(cell => cell.classList.remove("selected", "valid"));
+    this.stage = 0;
+  }
+
+  selectTarget(cell) {
+    this.moveTo(cell);
   }
 
   genFakeCells(n) {
@@ -108,19 +199,62 @@ class ChessBoard extends HTMLElement {
   addPiece(letter, position) {
     const x = position[0];
     const y = position[1];
-    this.getCell(x, y).innerHTML = /* html */`<chess-piece type="${letter}"></chess-piece>`;
+    const cell = this.getCell(x, y);
+
+    const piece = document.createElement("chess-piece");
+    piece.setAttribute("type", letter);
+    cell.appendChild(piece);
+
+    this.PIECES.push(piece);
   }
 
-  // board.movePiece("a2", "a3", "a4")
-  movePiece(from, to) {
+  // chess-cell
+  at(position) {
+    const x = position[0];
+    const y = position[1];
+    return this.getCell(x, y);
+  }
+
+  isEmpty(position) {
+    const cell = this.at(position);
+    const piece = cell.querySelector("chess-piece");
+    return !piece;
+  }
+
+  moveTo(targetCell) {
+    const sourceCell = this.shadowRoot.querySelector("chess-cell.selected");
+    const sourcePiece = sourceCell.shadowRoot.querySelector("chess-piece");
+
+    targetCell.shadowRoot.querySelector(".cell").appendChild(sourcePiece);
+    // sourcePiece.incMovements();
+    this.addMovement(sourcePiece, sourceCell, targetCell);
+    this.reset();
+  }
+
+  addMovement(piece, sourceCell, targetCell) {
+    this.movements.push(piece.id + sourceCell.id + targetCell.id);
+  }
+
+  getMovements(piece) {
+    return this.movements.filter(movement => movement.startsWith(piece));
   }
 
   getCell(x, y) {
     return this.shadowRoot.querySelector(`[x="${x}"][y="${y}"]`).shadowRoot.querySelector(".cell");
   }
 
+  getPiece(position) {
+    const isEmpty = this.isEmpty(position);
+    if (!isEmpty) {
+      const cell = this.at(position);
+      return cell.querySelector("chess-piece");
+    }
+  }
+
   preparePieces() {
-    initialLocations.forEach(([piece, position]) => this.addPiece(piece, position));
+    initialLocations.forEach(([piece, position]) => {
+      this.addPiece(piece, position);
+    });
   }
 
   render() {
@@ -134,7 +268,6 @@ class ChessBoard extends HTMLElement {
         ${this.genFakeCells(8)}
       </div>
       <div class="board">
-        ${this.renderCells()}
       </div>
       <div class="col right">
         ${this.genFakeCells(8)}
@@ -143,6 +276,7 @@ class ChessBoard extends HTMLElement {
         ${this.genFakeCells(10)}
       </div>
     </div>`;
+    this.renderCells();
   }
 }
 
