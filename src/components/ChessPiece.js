@@ -47,6 +47,9 @@ class ChessPiece extends HTMLElement {
     return this.color === "black";
   }
 
+  getRules() {
+  }
+
   changeTheme(theme = "pixel", ext = ".png") {
     const piece = PIECES[this.type.toUpperCase()];
     const img = this.shadowRoot.querySelector(".piece img");

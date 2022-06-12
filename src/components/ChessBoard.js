@@ -146,14 +146,36 @@ class ChessBoard extends HTMLElement {
     const cell = document.createElement("chess-cell");
     cell.setAttribute("x", col);
     cell.setAttribute("y", row);
+
+    const [a, b] = this.getCellCoords(col + row);
+    cell.setAttribute("row", a);
+    cell.setAttribute("col", b);
+
     cell.addEventListener("click", () => this.onClick(cell));
     cell.addEventListener("contextmenu", (ev) => this.onRightClick(ev, cell));
     board.appendChild(cell);
   }
 
+  hightlightMoves(cells) {
+    cells.forEach(move => {
+      const cell = this.getCellComponent(move.position);
+      cell && cell.classList.add("valid");
+    });
+  }
+
   onRightClick(ev, cell) {
-    ev.preventDefault();
-    cell.classList.add("valid");
+    const isCtrlPressed = ev.ctrlKey;
+    if (isCtrlPressed) {
+      ev.preventDefault();
+      cell.classList.add("valid");
+    }
+
+    if (!isCtrlPressed) {
+      ev.preventDefault();
+      const piece = cell.shadowRoot.querySelector("chess-piece");
+      if (!piece) return null;
+      console.log(this.getAllMoves(cell, piece));
+    }
   }
 
   onClick(cell) {
@@ -169,6 +191,236 @@ class ChessBoard extends HTMLElement {
     else if (this.isTargetStage() && isTargetValid) this.selectTarget(cell);
   }
 
+  getAllMoves(cell, piece) {
+    const pieceType = piece.id;
+    const [x, y] = [Number(cell.getAttribute("row")), Number(cell.getAttribute("col"))];
+
+    const moves = [];
+
+    // Pawn
+    if (pieceType.toLowerCase() === "p") {
+      const multiplier = piece.color === "white" ? -1 : 1;
+      const isInitialPosition = (piece.isBlack() && y === 1) || (piece.isWhite() && y === 6);
+
+      // Normal
+      const posForward = this.getCellPosition([x, y + (1 * multiplier)]);
+      this.isEmpty(posForward) && moves.push({ position: posForward, type: "normal" });
+
+      // Initial
+      const posForwardInitial = this.getCellPosition([x, y + (2 * multiplier)]);
+      if (this.isEmpty(posForward) && this.isEmpty(posForwardInitial) && isInitialPosition) {
+        moves.push({ position: posForwardInitial, type: "initial" });
+      }
+
+      // Attacks
+      const posLeft = this.getCellPosition([x - 1, y + (1 * multiplier)]);
+      const posRight = this.getCellPosition([x + 1, y + (1 * multiplier)]);
+      const cellLeft = this.getCellComponent(posLeft);
+      const cellRight = this.getCellComponent(posRight);
+      const isAttackLeft = cellLeft && this.hasOpponentPiece(cellLeft, piece);
+      const isAttackRight = cellRight && this.hasOpponentPiece(cellRight, piece);
+      isAttackLeft && moves.push({ position: posLeft, type: "attack" });
+      isAttackRight && moves.push({ position: posRight, type: "attack" });
+    }
+
+    // Bishop
+    if (pieceType.toLowerCase() === "b") {
+      const directions = [
+        [-1, -1],
+        [1, -1],
+        [-1, 1],
+        [1, 1]
+      ];
+      directions.forEach(direction => {
+        const [deltaX, deltaY] = direction;
+
+        let nextX = x + deltaX;
+        let nextY = y + deltaY;
+
+        if (this.isInside(nextX, nextY)) {
+          let nextCellPosition = this.getCellPosition([nextX, nextY]);
+          console.log({ nextX, nextY, nextCellPosition });
+          let nextCell = this.getCellComponent(nextCellPosition);
+
+          while (nextCell && this.isInside(nextX, nextY) && this.isEmpty(nextCellPosition)) {
+            moves.push({ position: nextCellPosition, type: "normal" });
+
+            nextX += deltaX;
+            nextY += deltaY;
+
+            nextCellPosition = this.getCellPosition([nextX, nextY]);
+            nextCell = this.getCellComponent(nextCellPosition);
+          }
+
+          if (nextCell && this.hasOpponentPiece(nextCell, piece)) {
+            moves.push({ position: nextCellPosition, type: "attack" });
+          }
+        }
+      });
+    }
+
+    // Knight
+    if (pieceType.toLowerCase() === "n") {
+      const directions = [
+        [-2, -1],
+        [-1, -2],
+        [1, -2],
+        [2, -1],
+        [2, 1],
+        [1, 2],
+        [-1, 2],
+        [-2, 1]
+      ];
+      directions.forEach(direction => {
+        const [deltaX, deltaY] = direction;
+
+        const nextX = x + deltaX;
+        const nextY = y + deltaY;
+
+        if (this.isInside(nextX, nextY)) {
+          const nextCellPosition = this.getCellPosition([nextX, nextY]);
+          const nextCell = this.getCellComponent(nextCellPosition);
+
+          if (nextCell && this.hasOpponentPiece(nextCell, piece)) {
+            moves.push({ position: nextCellPosition, type: "attack" });
+          } else if (nextCell && this.isEmpty(nextCellPosition)) {
+            moves.push({ position: nextCellPosition, type: "normal" });
+          }
+        }
+      });
+    }
+
+    // Rook
+    if (pieceType.toLowerCase() === "r") {
+      const directions = [
+        [-1, 0],
+        [1, 0],
+        [0, -1],
+        [0, 1]
+      ];
+      directions.forEach(direction => {
+        const [deltaX, deltaY] = direction;
+
+        let nextX = x + deltaX;
+        let nextY = y + deltaY;
+
+        if (this.isInside(nextX, nextY)) {
+          let nextCellPosition = this.getCellPosition([nextX, nextY]);
+          let nextCell = this.getCellComponent(nextCellPosition);
+
+          while (nextCell && this.isInside(nextX, nextY) && this.isEmpty(nextCellPosition)) {
+            moves.push({ position: nextCellPosition, type: "normal" });
+
+            nextX += deltaX;
+            nextY += deltaY;
+
+            nextCellPosition = this.getCellPosition([nextX, nextY]);
+            nextCell = this.getCellComponent(nextCellPosition);
+          }
+
+          if (nextCell && this.hasOpponentPiece(nextCell, piece)) {
+            moves.push({ position: nextCellPosition, type: "attack" });
+          }
+        }
+      });
+    }
+
+    // Queen
+    if (pieceType.toLowerCase() === "q") {
+      const directions = [
+        [-1, 0],
+        [1, 0],
+        [0, -1],
+        [0, 1],
+        [-1, -1],
+        [-1, 1],
+        [1, -1],
+        [1, 1]
+      ];
+      directions.forEach(direction => {
+        const [deltaX, deltaY] = direction;
+
+        let nextX = x + deltaX;
+        let nextY = y + deltaY;
+
+        if (this.isInside(nextX, nextY)) {
+          let nextCellPosition = this.getCellPosition([nextX, nextY]);
+          let nextCell = this.getCellComponent(nextCellPosition);
+
+          while (nextCell && this.isInside(nextX, nextY) && this.isEmpty(nextCellPosition)) {
+            moves.push({ position: nextCellPosition, type: "normal" });
+
+            nextX += deltaX;
+            nextY += deltaY;
+
+            nextCellPosition = this.getCellPosition([nextX, nextY]);
+            nextCell = this.getCellComponent(nextCellPosition);
+          }
+
+          if (nextCell && this.hasOpponentPiece(nextCell, piece)) {
+            moves.push({ position: nextCellPosition, type: "attack" });
+          }
+        }
+      });
+    }
+
+    // King
+    if (pieceType.toLowerCase() === "k") {
+      const directions = [
+        [-1, 0],
+        [1, 0],
+        [0, -1],
+        [0, 1],
+        [-1, -1],
+        [-1, 1],
+        [1, -1],
+        [1, 1]
+      ];
+      directions.forEach(direction => {
+        const [deltaX, deltaY] = direction;
+
+        const nextX = x + deltaX;
+        const nextY = y + deltaY;
+
+        if (this.isInside(nextX, nextY)) {
+          const nextCellPosition = this.getCellPosition([nextX, nextY]);
+          const nextCell = this.getCellComponent(nextCellPosition);
+
+          if (nextCell && this.hasOpponentPiece(nextCell, piece)) {
+            moves.push({ position: nextCellPosition, type: "attack" });
+          } else if (nextCell && this.isEmpty(nextCellPosition)) {
+            moves.push({ position: nextCellPosition, type: "normal" });
+          }
+        }
+      });
+    }
+
+    return moves;
+  }
+
+  getCellCoords(position) {
+    const x = position.charCodeAt(0) - 97;
+    const y = 8 - (Number(position[1]));
+    return [x, y];
+  }
+
+  getCellPosition(coords) {
+    if (!this.isInside(...coords)) return null;
+
+    const [x, y] = coords;
+    const col = String.fromCharCode(97 + x);
+    const row = 9 - (y + 1);
+    return `${col}${row}`;
+  }
+
+  getCellComponent(position) {
+    if (!position) return null;
+
+    const [x, y] = position.split("");
+    const cell = this.shadowRoot.querySelector(`chess-cell[x="${x}"][y="${y}"]`);
+    return cell;
+  }
+
   selectPiece(cell) {
     const sourcePiece = cell.shadowRoot.querySelector("chess-piece");
     const isCorrectWhitePiece = this.isWhiteTurn() && sourcePiece.isWhite();
@@ -178,6 +430,8 @@ class ChessBoard extends HTMLElement {
     if (isValidPiece) {
       cell.select();
       this.stage = 1;
+      const moves = this.getAllMoves(cell, sourcePiece);
+      this.hightlightMoves(moves);
     }
   }
 
@@ -208,6 +462,10 @@ class ChessBoard extends HTMLElement {
     this.PIECES.push(piece);
   }
 
+  isInside(x, y) {
+    return x >= 0 && x < 8 && y >= 0 && y < 8;
+  }
+
   // chess-cell
   at(position) {
     const x = position[0];
@@ -219,6 +477,15 @@ class ChessBoard extends HTMLElement {
     const cell = this.at(position);
     const piece = cell.querySelector("chess-piece");
     return !piece;
+  }
+
+  hasOpponentPiece(cell, sourcePiece) {
+    const piece = cell.shadowRoot.querySelector("chess-piece");
+    return piece && this.isOpponentPiece(piece, sourcePiece);
+  }
+
+  isOpponentPiece(piece, sourcePiece) {
+    return piece.color !== sourcePiece.color;
   }
 
   moveTo(targetCell) {
@@ -235,7 +502,7 @@ class ChessBoard extends HTMLElement {
     this.movements.push(piece.id + sourceCell.id + targetCell.id);
   }
 
-  getMovements(piece) {
+  getHistoryMovements(piece) {
     return this.movements.filter(movement => movement.startsWith(piece));
   }
 
