@@ -22,10 +22,6 @@ class ChessPiece extends HTMLElement {
     this.render();
   }
 
-  get id() {
-    return this.type;
-  }
-
   isWhite() {
     return this.color === "white";
   }
