@@ -8,9 +8,6 @@ class ChessCell extends HTMLElement {
 
   static get styles() {
     return /* css */`
-      :host {
-      }
-
       .cell {
         display: flex;
         justify-content: center;
@@ -27,9 +24,6 @@ class ChessCell extends HTMLElement {
 
       :host(.valid) {
         background: green;
-      }
-
-      :host(.selected) chess-piece {
       }
     `;
   }

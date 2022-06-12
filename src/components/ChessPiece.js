@@ -1,13 +1,4 @@
-const PIECES = {
-  K: "king",
-  Q: "queen",
-  R: "rook",
-  B: "bishop",
-  N: "knight",
-  P: "pawn",
-};
-
-const MAYUS_PIECES = Object.keys(PIECES);
+import PIECES from "../data/pieces.json";
 
 class ChessPiece extends HTMLElement {
   constructor() {
@@ -17,10 +8,6 @@ class ChessPiece extends HTMLElement {
 
   static get styles() {
     return /* css */`
-      :host {
-
-      }
-
       .piece img {
         image-rendering: pixelated;
         transform: scale(3);
@@ -31,7 +18,7 @@ class ChessPiece extends HTMLElement {
 
   connectedCallback() {
     this.type = this.getAttribute("type");
-    this.color = MAYUS_PIECES.includes(this.type) ? "black" : "white";
+    this.color = Object.keys(PIECES).includes(this.type) ? "black" : "white";
     this.render();
   }
 
@@ -45,9 +32,6 @@ class ChessPiece extends HTMLElement {
 
   isBlack() {
     return this.color === "black";
-  }
-
-  getRules() {
   }
 
   changeTheme(theme = "pixel", ext = ".png") {
