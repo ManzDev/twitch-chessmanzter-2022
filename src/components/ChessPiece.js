@@ -34,6 +34,30 @@ class ChessPiece extends HTMLElement {
     return this.color === "black";
   }
 
+  isPawn() {
+    return this.type.toLowerCase() === "p";
+  }
+
+  isRook() {
+    return this.type.toLowerCase() === "r";
+  }
+
+  isKing() {
+    return this.type.toLowerCase() === "k";
+  }
+
+  isBishop() {
+    return this.type.toLowerCase() === "b";
+  }
+
+  isKnight() {
+    return this.type.toLowerCase() === "n";
+  }
+
+  isQueen() {
+    return this.type.toLowerCase() === "q";
+  }
+
   changeTheme(theme = "pixel", ext = ".png") {
     const piece = PIECES[this.type.toUpperCase()];
     const img = this.shadowRoot.querySelector(".piece img");

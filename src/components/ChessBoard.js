@@ -1,4 +1,6 @@
 import initialLocations from "../data/initialLocations.json";
+import { Turn } from "../modules/Turn.js";
+import { Movements } from "../modules/Movements.js";
 import "./ChessCell.js";
 
 class ChessBoard extends HTMLElement {
@@ -6,16 +8,9 @@ class ChessBoard extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" });
     this.PIECES = [];
-    this.movements = [];
+    this.movements = new Movements();
+    this.turn = new Turn(this.movements);
     this.stage = 0; // 0: select, 1: move, 2: convert-piece
-  }
-
-  isWhiteTurn() {
-    return this.movements.length % 2 === 0;
-  }
-
-  isBlackTurn() {
-    return this.movements.length % 2 !== 0;
   }
 
   isSelectStage() {
@@ -126,7 +121,7 @@ class ChessBoard extends HTMLElement {
   changePieces(theme, ext = "png") {
     const cells = [...this.shadowRoot.querySelectorAll("chess-cell")];
     cells.forEach(cell => {
-      const piece = cell.shadowRoot.querySelector("chess-piece");
+      const piece = cell.piece;
       piece && piece.changeTheme(theme, ext);
     });
   }
@@ -172,14 +167,14 @@ class ChessBoard extends HTMLElement {
 
     if (!isCtrlPressed) {
       ev.preventDefault();
-      const piece = cell.shadowRoot.querySelector("chess-piece");
+      const piece = cell.piece;
       if (!piece) return null;
       console.log(this.getAllMoves(cell, piece));
     }
   }
 
   onClick(cell) {
-    const piece = cell.shadowRoot.querySelector("chess-piece");
+    const piece = cell.piece;
     const isCancel = cell.classList.contains("selected");
     const isTargetValid = cell.classList.contains("valid");
 
@@ -192,13 +187,11 @@ class ChessBoard extends HTMLElement {
   }
 
   getAllMoves(cell, piece) {
-    const pieceType = piece.id;
     const [x, y] = [Number(cell.getAttribute("row")), Number(cell.getAttribute("col"))];
 
     const moves = [];
 
-    // Pawn
-    if (pieceType.toLowerCase() === "p") {
+    if (piece.isPawn()) {
       const multiplier = piece.color === "white" ? -1 : 1;
       const isInitialPosition = (piece.isBlack() && y === 1) || (piece.isWhite() && y === 6);
 
@@ -223,8 +216,7 @@ class ChessBoard extends HTMLElement {
       isAttackRight && moves.push({ position: posRight, type: "attack" });
     }
 
-    // Bishop
-    if (pieceType.toLowerCase() === "b") {
+    if (piece.isBishop()) {
       const directions = [
         [-1, -1],
         [1, -1],
@@ -239,7 +231,6 @@ class ChessBoard extends HTMLElement {
 
         if (this.isInside(nextX, nextY)) {
           let nextCellPosition = this.getCellPosition([nextX, nextY]);
-          console.log({ nextX, nextY, nextCellPosition });
           let nextCell = this.getCellComponent(nextCellPosition);
 
           while (nextCell && this.isInside(nextX, nextY) && this.isEmpty(nextCellPosition)) {
@@ -259,8 +250,7 @@ class ChessBoard extends HTMLElement {
       });
     }
 
-    // Knight
-    if (pieceType.toLowerCase() === "n") {
+    if (piece.isKnight()) {
       const directions = [
         [-2, -1],
         [-1, -2],
@@ -290,8 +280,7 @@ class ChessBoard extends HTMLElement {
       });
     }
 
-    // Rook
-    if (pieceType.toLowerCase() === "r") {
+    if (piece.isRook()) {
       const directions = [
         [-1, 0],
         [1, 0],
@@ -325,8 +314,7 @@ class ChessBoard extends HTMLElement {
       });
     }
 
-    // Queen
-    if (pieceType.toLowerCase() === "q") {
+    if (piece.isQueen()) {
       const directions = [
         [-1, 0],
         [1, 0],
@@ -364,8 +352,7 @@ class ChessBoard extends HTMLElement {
       });
     }
 
-    // King
-    if (pieceType.toLowerCase() === "k") {
+    if (piece.isKing()) {
       const directions = [
         [-1, 0],
         [1, 0],
@@ -422,11 +409,9 @@ class ChessBoard extends HTMLElement {
   }
 
   selectPiece(cell) {
-    const sourcePiece = cell.shadowRoot.querySelector("chess-piece");
-    const isCorrectWhitePiece = this.isWhiteTurn() && sourcePiece.isWhite();
-    const isCorrectBlackPiece = this.isBlackTurn() && sourcePiece.isBlack();
+    const sourcePiece = cell.piece;
+    const isValidPiece = String(this.turn) === sourcePiece.color;
 
-    const isValidPiece = isCorrectWhitePiece || isCorrectBlackPiece;
     if (isValidPiece) {
       cell.select();
       this.stage = 1;
@@ -480,7 +465,7 @@ class ChessBoard extends HTMLElement {
   }
 
   hasOpponentPiece(cell, sourcePiece) {
-    const piece = cell.shadowRoot.querySelector("chess-piece");
+    const piece = cell.piece;
     return piece && this.isOpponentPiece(piece, sourcePiece);
   }
 
@@ -490,20 +475,11 @@ class ChessBoard extends HTMLElement {
 
   moveTo(targetCell) {
     const sourceCell = this.shadowRoot.querySelector("chess-cell.selected");
-    const sourcePiece = sourceCell.shadowRoot.querySelector("chess-piece");
+    const sourcePiece = sourceCell.piece;
 
     targetCell.shadowRoot.querySelector(".cell").appendChild(sourcePiece);
-    // sourcePiece.incMovements();
-    this.addMovement(sourcePiece, sourceCell, targetCell);
+    this.movements.add(sourcePiece, sourceCell, targetCell);
     this.reset();
-  }
-
-  addMovement(piece, sourceCell, targetCell) {
-    this.movements.push(piece.id + sourceCell.id + targetCell.id);
-  }
-
-  getHistoryMovements(piece) {
-    return this.movements.filter(movement => movement.startsWith(piece));
   }
 
   getCell(x, y) {
@@ -519,9 +495,8 @@ class ChessBoard extends HTMLElement {
   }
 
   preparePieces() {
-    initialLocations.forEach(([piece, position]) => {
-      this.addPiece(piece, position);
-    });
+    initialLocations.forEach(([piece, position]) =>
+      this.addPiece(piece, position));
   }
 
   render() {

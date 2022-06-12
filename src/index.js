@@ -24,5 +24,3 @@ gui.add(options, "theme", ["wood", "manzdev", "forest", "classic", "ocean"])
   });
 
 gui.close();
-
-// { K: "♔", Q: "♕", R: "♖", B: "♗", N: "♘", P: "♙", k: "♚", q: "♛", r: "♜", b: "♝", n: "♞", p: "♟" };
