@@ -45,6 +45,10 @@ class ChessCell extends HTMLElement {
     return this.shadowRoot.querySelector("chess-piece");
   }
 
+  isEmpty() {
+    return !this.piece;
+  }
+
   select() {
     this.classList.add("selected");
   }

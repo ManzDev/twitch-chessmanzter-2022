@@ -1,4 +1,5 @@
 import PIECES from "../data/pieces.json";
+import RULES from "../data/rules.json";
 
 class ChessPiece extends HTMLElement {
   constructor() {
@@ -20,6 +21,11 @@ class ChessPiece extends HTMLElement {
     this.type = this.getAttribute("type");
     this.color = Object.keys(PIECES).includes(this.type) ? "black" : "white";
     this.render();
+  }
+
+  get directions() {
+    const type = this.type.toLowerCase();
+    return RULES[type];
   }
 
   isWhite() {
@@ -52,6 +58,10 @@ class ChessPiece extends HTMLElement {
 
   isQueen() {
     return this.type.toLowerCase() === "q";
+  }
+
+  isOpponentOf(piece) {
+    return this.color !== piece.color;
   }
 
   changeTheme(theme = "pixel", ext = ".png") {
