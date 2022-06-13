@@ -8,7 +8,7 @@ class ChessCell extends HTMLElement {
 
   static get styles() {
     return /* css */`
-      .cell {
+      :host {
         display: flex;
         justify-content: center;
         align-items: center;
@@ -28,8 +28,17 @@ class ChessCell extends HTMLElement {
     `;
   }
 
-  get id() {
-    return this.x + this.y;
+  get position() {
+    const [row, col] = this.coords;
+    const x = String.fromCharCode(97 + row);
+    const y = 9 - (col + 1);
+    return x + y;
+  }
+
+  get coords() {
+    const row = Number(this.getAttribute("row"));
+    const col = Number(this.getAttribute("col"));
+    return [row, col];
   }
 
   get piece() {
@@ -45,16 +54,15 @@ class ChessCell extends HTMLElement {
   }
 
   connectedCallback() {
-    this.x = this.getAttribute("x");
-    this.y = this.getAttribute("y");
+    // this.x = this.getAttribute("x");
+    // this.y = this.getAttribute("y");
     this.render();
   }
 
   render() {
     this.shadowRoot.innerHTML = /* html */`
     <style>${ChessCell.styles}</style>
-    <div class="cell">
-    </div>`;
+    `;
   }
 }
 
