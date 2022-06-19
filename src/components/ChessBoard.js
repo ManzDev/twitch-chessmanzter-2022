@@ -121,11 +121,11 @@ class ChessBoard extends HTMLElement {
     this.classList.add(DEFAULT_THEME);
   }
 
-  changePieces(theme, ext = "png") {
+  changePieces(theme) {
     const cells = [...this.shadowRoot.querySelectorAll("chess-cell")];
     cells.forEach(cell => {
       const piece = cell.piece;
-      piece && piece.changeTheme(theme, ext);
+      piece && piece.changeTheme(theme);
     });
   }
 

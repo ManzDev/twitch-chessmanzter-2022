@@ -1,10 +1,16 @@
 import PIECES from "../data/pieces.json";
 import RULES from "../data/rules.json";
 
+const getSkin = (theme, filename) => {
+  const ext = theme === "normal" ? "svg" : "png";
+  return `pieces/${theme}/${filename}.${ext}`;
+};
+
 class ChessPiece extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    this.theme = "pixel";
   }
 
   static get styles() {
@@ -92,18 +98,20 @@ class ChessPiece extends HTMLElement {
     });
   }
 
-  changeTheme(theme = "pixel", ext = ".png") {
+  changeTheme(theme = "pixel") {
+    this.theme = theme;
     const piece = PIECES[this.type.toUpperCase()];
     const img = this.shadowRoot.querySelector(".piece img");
-    img.src = `pieces/${theme}/${this.color}-${piece}${ext}`;
+    img.src = getSkin(theme, `${this.color}-${piece}`);
   }
 
   render() {
-    const piece = PIECES[this.type.toUpperCase()] + ".png";
+    const piece = PIECES[this.type.toUpperCase()];
+    const url = getSkin(this.theme, `${this.color}-${piece}`);
     this.shadowRoot.innerHTML = /* html */`
     <style>${ChessPiece.styles}</style>
     <div class="piece">
-      <img src="pieces/pixel/${this.color}-${piece}" alt="${this.color} ${piece}" />
+      <img src="${url}" alt="${this.color} ${piece}" />
     </div>`;
   }
 }

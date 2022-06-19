@@ -12,10 +12,7 @@ const options = {
 };
 
 gui.add(options, "pieces", ["pixel", "normal"])
-  .onChange(data => {
-    const ext = data === "pixel" ? ".png" : ".svg";
-    board.changePieces(data, ext);
-  });
+  .onChange(data => board.changePieces(data));
 
 gui.add(options, "theme", ["wood", "manzdev", "forest", "classic", "ocean"])
   .onChange(data => {
