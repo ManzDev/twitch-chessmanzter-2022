@@ -16,7 +16,7 @@ export class Pieces {
     this.pieces[piece.id] = piece;
   }
 
-  kill(piece) {
+  pop(piece) {
     this.numPieces--;
     delete this.pieces[piece.id];
     this.captured[piece.id] = piece;

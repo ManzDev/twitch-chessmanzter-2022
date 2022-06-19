@@ -1,5 +1,12 @@
 import "./ChessPiece.js";
 
+const choirSound = new Audio("sounds/choir.mp3");
+const play = (sound) => {
+  sound.currentTime = 0;
+  sound.volume = 0.7;
+  sound.play();
+};
+
 class ChessCell extends HTMLElement {
   constructor() {
     super();
@@ -62,6 +69,10 @@ class ChessCell extends HTMLElement {
     return this.shadowRoot.querySelector("chess-piece");
   }
 
+  hasOpponentPiece(sourcePiece) {
+    return this.piece && this.piece.isOpponentOf(sourcePiece);
+  }
+
   isEmpty() {
     return !this.piece;
   }
@@ -73,6 +84,27 @@ class ChessCell extends HTMLElement {
     return halo;
   }
 
+  elevateToHeaven(piece) {
+    return new Promise((resolve, reject) => {
+      const halo = this.createHalo();
+      setTimeout(() => halo.classList.add("appears"), 500);
+      setTimeout(() => play(choirSound), 1000);
+      const animation = piece.animate([
+        { transform: "translate(0, 0)", opacity: 1 },
+        { transform: "translate(0, -400%", opacity: 0 }
+      ], {
+        iterations: 1,
+        duration: 1750,
+        delay: 1000
+      });
+      animation.onfinish = () => {
+        resolve();
+        halo.remove();
+        piece.remove();
+      };
+    });
+  }
+
   select() {
     this.classList.add("selected");
   }
@@ -82,8 +114,6 @@ class ChessCell extends HTMLElement {
   }
 
   connectedCallback() {
-    // this.x = this.getAttribute("x");
-    // this.y = this.getAttribute("y");
     this.render();
   }
 

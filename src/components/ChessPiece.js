@@ -1,12 +1,6 @@
 import PIECES from "../data/pieces.json";
 import RULES from "../data/rules.json";
 
-const choirSound = new Audio("sounds/choir.mp3");
-const play = (sound) => {
-  sound.currentTime = 0;
-  sound.play();
-};
-
 class ChessPiece extends HTMLElement {
   constructor() {
     super();
@@ -95,27 +89,6 @@ class ChessPiece extends HTMLElement {
         iterations: 1
       });
       animation.onfinish = () => resolve();
-    });
-  }
-
-  toHeaven(cell) {
-    return new Promise((resolve, reject) => {
-      const halo = cell.createHalo();
-      setTimeout(() => halo.classList.add("appears"), 500);
-      setTimeout(() => play(choirSound), 1000);
-      const animation = this.animate([
-        { transform: "translate(0, 0)", opacity: 1 },
-        { transform: "translate(0, -400%", opacity: 0 }
-      ], {
-        iterations: 1,
-        duration: 1750,
-        delay: 1000
-      });
-      animation.onfinish = () => {
-        resolve();
-        halo.remove();
-        this.remove();
-      };
     });
   }
 

@@ -174,9 +174,10 @@ class ChessBoard extends HTMLElement {
     // Select Source
     if (piece && this.stage.isSelect()) this.selectPiece(cell);
     // Cancel Source
-    else if (isCancel && this.stage.isTarget()) this.reset();
-    // Select Target
-    else if (this.stage.isTarget() && isTargetValid) this.selectTarget(cell);
+    else if (isCancel && this.stage.isTarget()) {
+      this.reset();
+      this.stage.reset();
+    } else if (this.stage.isTarget() && isTargetValid) this.selectTarget(cell);
   }
 
   getAllMoves(cell, piece) {
@@ -202,8 +203,8 @@ class ChessBoard extends HTMLElement {
       // Attacks
       const cellLeft = this.getCell([x - 1, y + (1 * multiplier)]);
       const cellRight = this.getCell([x + 1, y + (1 * multiplier)]);
-      const isAttackLeft = cellLeft && this.hasOpponentPiece(cellLeft, piece);
-      const isAttackRight = cellRight && this.hasOpponentPiece(cellRight, piece);
+      const isAttackLeft = cellLeft && cellLeft.hasOpponentPiece(piece);
+      const isAttackRight = cellRight && cellRight.hasOpponentPiece(piece);
       isAttackLeft && moves.push({ position: cellLeft.position, type: "attack" });
       isAttackRight && moves.push({ position: cellRight.position, type: "attack" });
     }
@@ -224,7 +225,7 @@ class ChessBoard extends HTMLElement {
           nextCell = this.getCell([nextX, nextY]);
         }
 
-        if (nextCell && this.hasOpponentPiece(nextCell, piece)) {
+        if (nextCell && nextCell.hasOpponentPiece(piece)) {
           moves.push({ position: nextCell.position, type: "attack" });
         }
       });
@@ -238,7 +239,7 @@ class ChessBoard extends HTMLElement {
         const nextY = y + deltaY;
         const nextCell = this.getCell([nextX, nextY]);
 
-        if (nextCell && this.hasOpponentPiece(nextCell, piece)) {
+        if (nextCell && nextCell.hasOpponentPiece(piece)) {
           moves.push({ position: nextCell.position, type: "attack" });
         } else if (nextCell && nextCell.isEmpty()) {
           moves.push({ position: nextCell.position, type: "normal" });
@@ -255,7 +256,7 @@ class ChessBoard extends HTMLElement {
 
         const nextCell = this.getCell([nextX, nextY]);
 
-        if (nextCell && this.hasOpponentPiece(nextCell, piece)) {
+        if (nextCell && nextCell.hasOpponentPiece(piece)) {
           moves.push({ position: nextCell.position, type: "attack" });
         } else if (nextCell && nextCell.isEmpty()) {
           moves.push({ position: nextCell.position, type: "normal" });
@@ -293,21 +294,19 @@ class ChessBoard extends HTMLElement {
   reset() {
     const cells = [...this.shadowRoot.querySelectorAll("chess-cell")];
     cells.forEach(cell => cell.classList.remove("selected", "valid"));
-    this.stage.next(); // to select stage
   }
 
+  /*
   isInside(x, y) {
     return x >= 0 && x < 8 && y >= 0 && y < 8;
   }
-
-  hasOpponentPiece(cell, sourcePiece) {
-    return cell.piece && cell.piece.isOpponentOf(sourcePiece);
-  }
+  */
 
   moveTo(sourcePiece, targetCell) {
     const isAttack = Boolean(targetCell.piece);
     const sourceCell = this.shadowRoot.querySelector("chess-cell.selected");
     this.reset();
+    this.stage.next();
 
     const sourceAnimation = sourcePiece.slide(sourceCell, targetCell);
 
@@ -322,12 +321,10 @@ class ChessBoard extends HTMLElement {
 
   attackPiece(battleCell) {
     const [attackerPiece, attackedPiece] = battleCell.shadowRoot.querySelectorAll("chess-piece");
-    const animation = attackedPiece.toHeaven(battleCell);
-    this.pieces.kill(attackedPiece);
+    const animation = battleCell.elevateToHeaven(attackedPiece);
+    this.pieces.pop(attackedPiece);
 
-    animation.then(() => {
-      this.stage.next();
-    });
+    animation.then(() => this.stage.next());
   }
 
   at(coords) {
