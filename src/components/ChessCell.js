@@ -19,11 +19,28 @@ class ChessCell extends HTMLElement {
       }
 
       :host(.selected) {
-        background: red;
+        background: var(--selected-cell-color);
       }
 
       :host(.valid) {
-        background: green;
+        background: var(--valid-cell-color);
+      }
+
+      .halo {
+        display: block;
+        width: 50px;
+        height: 60px;
+        background: linear-gradient(to top, gold, transparent);
+        filter: drop-shadow(0 0 5px gold) blur(2px);
+        position: absolute;
+        transform-origin: 50% 100%;
+        transform: translateX(50%) scaleY(8);
+        opacity: 0;
+        transition: opacity 0.5s;
+      }
+
+      .halo.appears {
+        opacity: 1;
       }
     `;
   }
@@ -47,6 +64,13 @@ class ChessCell extends HTMLElement {
 
   isEmpty() {
     return !this.piece;
+  }
+
+  createHalo() {
+    const halo = document.createElement("div");
+    halo.classList.add("halo");
+    this.piece.insertAdjacentElement("afterend", halo);
+    return halo;
   }
 
   select() {

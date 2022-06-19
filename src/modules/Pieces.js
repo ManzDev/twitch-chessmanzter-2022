@@ -2,6 +2,7 @@ export class Pieces {
   constructor() {
     this.numPieces = 0;
     this.pieces = {};
+    this.captured = {};
   }
 
   push(piece) {
@@ -13,6 +14,12 @@ export class Pieces {
 
     piece.id = piece.type + number;
     this.pieces[piece.id] = piece;
+  }
+
+  kill(piece) {
+    this.numPieces--;
+    delete this.pieces[piece.id];
+    this.captured[piece.id] = piece;
   }
 
   get(id) {

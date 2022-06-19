@@ -8,7 +8,7 @@ export class Movements {
   }
 
   add(piece, sourceCell, targetCell) {
-    this.movements.push(piece.id + sourceCell.id + targetCell.id);
+    this.movements.push(piece.id + sourceCell.position + targetCell.position);
   }
 
   getAll() {
