@@ -1,7 +1,7 @@
 {
   "name": "twitch-chessmanzter-2022",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "scripts": {
     "dev": "vite",
     "build": "rm -rf dist && vite build",
