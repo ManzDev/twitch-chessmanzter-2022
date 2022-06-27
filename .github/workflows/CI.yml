@@ -32,7 +32,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - name: Build dependencies
         run: |
-          npm run install
+          npm install
           npm run build
       - name: Compress dist directory
         run: tar -zcvf dist-dir.tar.gz ./dist/
