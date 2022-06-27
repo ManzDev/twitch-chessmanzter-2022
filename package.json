@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "rm -rf dist && vite build",
     "preview": "vite preview",
-    "deploy": "gh-pages -d dist"
+    "deploy": "npx gh-pages -d dist"
   },
   "devDependencies": {
     "@stylelint/postcss-css-in-js": "^0.38.0",
@@ -15,7 +15,6 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-n": "14.0.0",
     "eslint-plugin-promise": "^6.0.0",
-    "gh-pages": "^4.0.0",
     "postcss": "^8.4.14",
     "postcss-html": "^1.4.1",
     "postcss-jsx": "^0.36.4",
