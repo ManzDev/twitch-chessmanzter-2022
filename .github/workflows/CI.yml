@@ -31,7 +31,9 @@ jobs:
           node-version: 16
           registry-url: 'https://registry.npmjs.org'
       - name: Build dependencies
-        run: npm run build
+        run: |
+          npm run install
+          npm run build
       - name: Compress dist directory
         run: tar -zcvf dist-dir.tar.gz ./dist/
       - uses: actions/upload-artifact@v2
