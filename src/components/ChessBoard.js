@@ -12,6 +12,19 @@ import { coords, toggleColorPieces } from "../modules/Utils.js";
 const DEFAULT_THEME = "manzdev";
 
 export class ChessBoard extends HTMLElement {
+  static container = null
+  static board = null;
+
+  static {
+    ((isInitialized) => {
+      if(!isInitialized) {
+        ChessBoard.container = document.querySelector(".container");
+        ChessBoard.board = document.createElement("chess-board");
+        ChessBoard.container.appendChild(ChessBoard.board);
+      }
+    })(ChessBoard.board !== null)
+  }
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -142,7 +155,7 @@ export class ChessBoard extends HTMLElement {
   }
 
   renderCell(row, col) {
-    const board = this.shadowRoot.querySelector(".board");
+    const shadowBoard = this.shadowRoot.querySelector(".board");
     const cell = document.createElement("chess-cell");
 
     cell.setAttribute("col", col);
@@ -150,7 +163,7 @@ export class ChessBoard extends HTMLElement {
 
     cell.addEventListener("click", () => this.onClick(cell));
     cell.addEventListener("contextmenu", (ev) => this.onRightClick(ev, cell));
-    board.appendChild(cell);
+    shadowBoard.appendChild(cell);
   }
 
   highlightMoves(cells) {
@@ -334,9 +347,6 @@ export class ChessBoard extends HTMLElement {
   }
 
   setFromFEN(fen) {
-    const board = document.createElement("chess-board");
-    document.querySelector(".container").appendChild(board);
-
     const [state, turn] = toggleColorPieces(fen).split(" ");
     const rows = state.replaceAll("/", "").split("");
     let pos = 0;
@@ -347,7 +357,7 @@ export class ChessBoard extends HTMLElement {
 
       if (!isEmpty) {
         const coords = [pos % 8, ~~(pos / 8)];
-        board.addPiece(item, coords);
+        ChessBoard.board.addPiece(item, coords);
       }
 
       pos += isEmpty ? num : 1;
