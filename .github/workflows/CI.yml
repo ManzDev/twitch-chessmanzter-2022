@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  # Cancel Previous Redundant Builds
+  check-skip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel Previous Redundant Builds
+        uses: styfle/cancel-workflow-action@0.6.0
+        with:
+          access_token: ${{ github.token }}
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 16
+          registry-url: 'https://registry.npmjs.org'
+      - name: Build dependencies
+        run: |
+          npm install
+          npm run build
+      - name: Compress dist directory
+        run: tar -zcvf dist-dir.tar.gz ./dist/
+      - uses: actions/upload-artifact@v2
+        with:
+          name: dist-folder
+          path: dist-dir.tar.gz
+  deploy:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 16
+      - uses: actions/download-artifact@v2
+        with:
+          name: dist-folder
+          path: .
+      - name: Uncompress dist directory
+        run: |
+          tar -zxvf ./dist-dir.tar.gz
+          rm ./dist-dir.tar.gz
+      - name: Deploy
+        id: deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
