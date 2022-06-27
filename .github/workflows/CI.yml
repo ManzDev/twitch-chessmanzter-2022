@@ -1,8 +1,8 @@
 name: CI
 
 on:
-  pull_request:
-    branches: [master]
+  push:
+    branches: [main]
 
 jobs:
   # Cancel Previous Redundant Builds
