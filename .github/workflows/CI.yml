@@ -54,8 +54,8 @@ jobs:
           path: .
       - name: configure gh author
         run: |
-          git config --global user.email "magnus.carlsen@chess.com"
-          git config --global user.name "Magnus Carlsen"
+          git config --global user.email "andresin87@gmail.com"
+          git config --global user.name "andresin87"
       - name: Uncompress dist directory
         run: |
           tar -zxvf ./dist-dir.tar.gz
