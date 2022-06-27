@@ -52,14 +52,13 @@ jobs:
         with:
           name: dist-folder
           path: .
-      - name: configure gh author
-        run: |
-          git config --global user.email "andresin87@gmail.com"
-          git config --global user.name "andresin87"
       - name: Uncompress dist directory
         run: |
           tar -zxvf ./dist-dir.tar.gz
           rm ./dist-dir.tar.gz
       - name: Deploy
         id: deploy
-        run: npm run deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
