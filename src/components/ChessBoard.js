@@ -1,4 +1,3 @@
-import initialLocations from "../data/initialLocations.json";
 import { Turn } from "../modules/Turn.js";
 import { Movements } from "../modules/Movements.js";
 import { Pieces } from "../modules/Pieces.js";
@@ -8,11 +7,11 @@ import { Stage } from "../modules/Stage";
 import "./ChessCell.js";
 
 // Translate positions to coordinates
-import { coords } from "../modules/Utils.js";
+import { coords, toggleColorPieces } from "../modules/Utils.js";
 
 const DEFAULT_THEME = "manzdev";
 
-class ChessBoard extends HTMLElement {
+export class ChessBoard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -296,12 +295,6 @@ class ChessBoard extends HTMLElement {
     cells.forEach(cell => cell.classList.remove("selected", "valid"));
   }
 
-  /*
-  isInside(x, y) {
-    return x >= 0 && x < 8 && y >= 0 && y < 8;
-  }
-  */
-
   moveTo(sourcePiece, targetCell) {
     const isAttack = Boolean(targetCell.piece);
     const sourceCell = this.shadowRoot.querySelector("chess-cell.selected");
@@ -327,6 +320,42 @@ class ChessBoard extends HTMLElement {
     animation.then(() => this.stage.next());
   }
 
+  toFEN() {
+    return toggleColorPieces([...this.shadowRoot.querySelectorAll("chess-cell")]
+      .map(cell => cell.piece?.type)
+      .reduce((ac, el) => ac + (el || 1), "")
+      .replace(/(\S{8})/g, "$1/")
+      .replace(/(11+)/g, x => x.length))
+      .replace(/\/$/, " ") + this.turn.toString()[0];
+  }
+
+  fromFEN(fen) {
+
+  }
+
+  setFromFEN(fen) {
+    const board = document.createElement("chess-board");
+    document.querySelector(".container").appendChild(board);
+
+    const [state, turn] = toggleColorPieces(fen).split(" ");
+    const rows = state.replaceAll("/", "").split("");
+    let pos = 0;
+
+    rows.forEach((item) => {
+      const num = parseInt(item);
+      const isEmpty = !Number.isNaN(num);
+
+      if (!isEmpty) {
+        const coords = [pos % 8, ~~(pos / 8)];
+        board.addPiece(item, coords);
+      }
+
+      pos += isEmpty ? num : 1;
+    });
+
+    this.turn.set(turn);
+  }
+
   at(coords) {
     return this.getCell(coords).shadowRoot;
   }
@@ -338,10 +367,6 @@ class ChessBoard extends HTMLElement {
     cell.appendChild(piece);
 
     this.pieces.push(piece);
-  }
-
-  preparePieces() {
-    initialLocations.forEach(([piece, coords]) => this.addPiece(piece, coords));
   }
 
   render() {
