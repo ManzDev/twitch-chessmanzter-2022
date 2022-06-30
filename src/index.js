@@ -17,8 +17,9 @@ gui.add(options, "pieces", ["pixel", "normal"])
 
 gui.add(options, "theme", ["wood", "manzdev", "forest", "classic", "ocean"])
   .onChange(data => {
-    board.classList.remove("wood", "manzdev", "forest", "classic", "ocean");
-    board.classList.add(data);
+    const chessboard = document.querySelector("chess-board");
+    chessboard.classList.remove("wood", "manzdev", "forest", "classic", "ocean");
+    chessboard.classList.add(data);
   });
 
 gui.close();

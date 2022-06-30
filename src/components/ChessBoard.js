@@ -12,17 +12,17 @@ import { coords, toggleColorPieces } from "../modules/Utils.js";
 const DEFAULT_THEME = "manzdev";
 
 export class ChessBoard extends HTMLElement {
-  static container = null
+  static container = null;
   static board = null;
 
   static {
     ((isInitialized) => {
-      if(!isInitialized) {
+      if (!isInitialized) {
         ChessBoard.container = document.querySelector(".container");
         ChessBoard.board = document.createElement("chess-board");
         ChessBoard.container.appendChild(ChessBoard.board);
       }
-    })(ChessBoard.board !== null)
+    })(ChessBoard.board !== null);
   }
 
   constructor() {
@@ -134,7 +134,8 @@ export class ChessBoard extends HTMLElement {
   }
 
   changePieces(theme) {
-    const cells = [...this.shadowRoot.querySelectorAll("chess-cell")];
+    const board = document.querySelector("chess-board");
+    const cells = [...board.shadowRoot.querySelectorAll("chess-cell")];
     cells.forEach(cell => {
       const piece = cell.piece;
       piece && piece.changeTheme(theme);
@@ -326,7 +327,7 @@ export class ChessBoard extends HTMLElement {
   }
 
   attackPiece(battleCell) {
-    const [attackerPiece, attackedPiece] = battleCell.shadowRoot.querySelectorAll("chess-piece");
+    const [, attackedPiece] = battleCell.shadowRoot.querySelectorAll("chess-piece");
     const animation = battleCell.elevateToHeaven(attackedPiece);
     this.pieces.pop(attackedPiece);
 
