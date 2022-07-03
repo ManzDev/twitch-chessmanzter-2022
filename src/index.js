@@ -23,3 +23,5 @@ gui.add(options, "theme", ["wood", "manzdev", "forest", "classic", "ocean"])
   });
 
 gui.close();
+
+// const vb = new VirtualBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w");

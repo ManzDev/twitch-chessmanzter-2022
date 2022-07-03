@@ -2,6 +2,7 @@ import { Turn } from "../modules/Turn.js";
 import { Movements } from "../modules/Movements.js";
 import { Pieces } from "../modules/Pieces.js";
 import { Stage } from "../modules/Stage";
+import { VirtualBoard } from "../modules/VirtualBoard.js";
 
 // Components
 import "./ChessCell.js";
@@ -174,10 +175,12 @@ export class ChessBoard extends HTMLElement {
     });
   }
 
+  /*
   onRightClick(ev, cell) {
     ev.preventDefault();
     if (cell.piece) { console.log(this.getAllMoves(cell, cell.piece)); }
   }
+  */
 
   onClick(cell) {
     const piece = cell.piece;
@@ -301,6 +304,12 @@ export class ChessBoard extends HTMLElement {
     const sourceCell = this.shadowRoot.querySelector("chess-cell.selected");
     const sourcePiece = sourceCell.piece;
 
+    const virtualBoard = new VirtualBoard(this.toFEN());
+    virtualBoard.movePiece(sourceCell.coords, targetCell.coords);
+    const kingCoord = virtualBoard.isInCheck("white");
+    const pieces = virtualBoard.getPiecesByColor("white");
+    console.log(pieces);
+
     this.moveTo(sourcePiece, targetCell);
   }
 
@@ -341,10 +350,6 @@ export class ChessBoard extends HTMLElement {
       .replace(/(\S{8})/g, "$1/")
       .replace(/(11+)/g, x => x.length))
       .replace(/\/$/, " ") + this.turn.toString()[0];
-  }
-
-  fromFEN(fen) {
-
   }
 
   setFromFEN(fen) {
