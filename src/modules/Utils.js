@@ -7,6 +7,13 @@ export const coords = (position) => {
   return isInside ? [col, row] : null;
 };
 
+export const position = (coords) => {
+  const [row, col] = coords;
+  const x = String.fromCharCode(97 + row);
+  const y = 9 - (col + 1);
+  return x + y;
+};
+
 export const toggleColorPieces = (fen) =>
   fen.split("")
     .map(e => e.match(/[a-z]/) ? e.toUpperCase() : e.match(/[A-Z]/) ? e.toLowerCase() : e).join("");

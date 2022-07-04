@@ -1,5 +1,5 @@
 import { Turn } from "../modules/Turn.js";
-import { Movements } from "../modules/Movements.js";
+import { History } from "../modules/History.js";
 import { Pieces } from "../modules/Pieces.js";
 import { Stage } from "../modules/Stage";
 import { VirtualBoard } from "../modules/VirtualBoard.js";
@@ -30,8 +30,8 @@ export class ChessBoard extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" });
     this.pieces = new Pieces();
-    this.movements = new Movements();
-    this.turn = new Turn(this.movements);
+    this.history = new History();
+    this.turn = new Turn(this.history);
     this.stage = new Stage();
   }
 
@@ -175,12 +175,10 @@ export class ChessBoard extends HTMLElement {
     });
   }
 
-  /*
   onRightClick(ev, cell) {
     ev.preventDefault();
     if (cell.piece) { console.log(this.getAllMoves(cell, cell.piece)); }
   }
-  */
 
   onClick(cell) {
     const piece = cell.piece;
@@ -288,14 +286,19 @@ export class ChessBoard extends HTMLElement {
     return this.shadowRoot.querySelector(`[row="${row}"][col="${col}"]`);
   }
 
-  selectPiece(cell) {
-    const sourcePiece = cell.piece;
+  selectPiece(sourceCell) {
+    const sourcePiece = sourceCell.piece;
     const isValidPiece = String(this.turn) === sourcePiece.color;
 
     if (isValidPiece) {
-      cell.select();
+      sourceCell.select();
       this.stage.next(); // to target stage
-      const moves = this.getAllMoves(cell, sourcePiece);
+
+      const virtualBoard = new VirtualBoard(this.toFEN());
+      const moves = virtualBoard.selectPiece(sourceCell.coords);
+      console.log(moves);
+
+      // const moves = this.getAllMoves(sourceCell, sourcePiece);
       this.highlightMoves(moves);
     }
   }
@@ -303,12 +306,6 @@ export class ChessBoard extends HTMLElement {
   selectTarget(targetCell) {
     const sourceCell = this.shadowRoot.querySelector("chess-cell.selected");
     const sourcePiece = sourceCell.piece;
-
-    const virtualBoard = new VirtualBoard(this.toFEN());
-    virtualBoard.movePiece(sourceCell.coords, targetCell.coords);
-    const kingCoord = virtualBoard.isInCheck("white");
-    const pieces = virtualBoard.getPiecesByColor("white");
-    console.log(pieces);
 
     this.moveTo(sourcePiece, targetCell);
   }
@@ -329,7 +326,7 @@ export class ChessBoard extends HTMLElement {
     sourceAnimation.then(() => {
       this.stage.next();
       targetCell.shadowRoot.querySelector("style").insertAdjacentElement("afterend", sourcePiece);
-      this.movements.add(sourcePiece, sourceCell, targetCell);
+      this.history.add(sourcePiece, sourceCell, targetCell);
       isAttack && this.attackPiece(targetCell);
       !isAttack && this.stage.next();
     });
