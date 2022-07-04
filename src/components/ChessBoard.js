@@ -210,7 +210,7 @@ export class ChessBoard extends HTMLElement {
       // Current Board Status
       const fen = this.toFEN();
       const virtualBoard = new VirtualBoard(fen);
-      const moves = virtualBoard.getAllMoves(sourceCell.coords);
+      const moves = virtualBoard.getAllMoves(sourceCell.coords).filter(move => move.possible);
 
       moves.forEach(move => {
         const newVirtualBoard = new VirtualBoard(fen);

@@ -1,7 +1,7 @@
 import { isWhite, isBlack, isEmpty, areOpponentPieces, isPawn, isBishop, isRook, isQueen, getRules, isKnight, isKing } from "./Movements.js";
 import { position, toggleColorPieces } from "./Utils.js";
 
-const debug = (table) => console.table(JSON.parse(JSON.stringify(table)));
+// const debug = (table) => console.table(JSON.parse(JSON.stringify(table)));
 
 export class VirtualBoard {
   constructor(fen) {
@@ -81,13 +81,13 @@ export class VirtualBoard {
       // Normal
       const normalCoords = [col, row + (1 * multiplier)];
       const cellForward = this.getCell(normalCoords);
-      isEmpty(cellForward) && moves.push({ position: position(normalCoords), type: "normal" });
+      isEmpty(cellForward) && moves.push({ position: position(normalCoords), type: "normal", possible: true });
 
       // Initial (Special movement)
       const initialCoords = [col, row + (2 * multiplier)];
       const cellForwardInitial = this.getCell(initialCoords);
       if (isEmpty(cellForward) && isEmpty(cellForwardInitial) && isInitialPosition) {
-        moves.push({ position: position(initialCoords), type: "initial" });
+        moves.push({ position: position(initialCoords), type: "initial", possible: true });
       }
 
       // Attacks
@@ -97,8 +97,8 @@ export class VirtualBoard {
       const cellRight = this.getCell(rightCoords);
       const isAttackLeft = cellLeft && areOpponentPieces(sourcePiece, cellLeft);
       const isAttackRight = cellRight && areOpponentPieces(sourcePiece, cellRight);
-      isAttackLeft && moves.push({ position: position(leftCoords), type: "attack" });
-      isAttackRight && moves.push({ position: position(rightCoords), type: "attack" });
+      isAttackLeft && moves.push({ position: position(leftCoords), type: "attack", possible: true });
+      isAttackRight && moves.push({ position: position(rightCoords), type: "attack", possible: true });
     }
 
     if (isBishop(sourcePiece) || isRook(sourcePiece) || isQueen(sourcePiece)) {
@@ -112,7 +112,7 @@ export class VirtualBoard {
         let nextCell = this.getCell([nextX, nextY]);
 
         while (isEmpty(nextCell)) {
-          moves.push({ position: position([nextX, nextY]), type: "normal" });
+          moves.push({ position: position([nextX, nextY]), type: "normal", possible: true });
 
           nextX += deltaX;
           nextY += deltaY;
@@ -120,7 +120,7 @@ export class VirtualBoard {
         }
 
         if (nextCell && areOpponentPieces(nextCell, sourcePiece)) {
-          moves.push({ position: position([nextX, nextY]), type: "attack" });
+          moves.push({ position: position([nextX, nextY]), type: "attack", possible: true });
         }
       });
     }
@@ -136,9 +136,9 @@ export class VirtualBoard {
         const nextCell = this.getCell([nextX, nextY]);
 
         if (nextCell && areOpponentPieces(nextCell, sourcePiece)) {
-          moves.push({ position: position([nextX, nextY]), type: "attack" });
+          moves.push({ position: position([nextX, nextY]), type: "attack", possible: true });
         } else if (isEmpty(nextCell)) {
-          moves.push({ position: position([nextX, nextY]), type: "normal" });
+          moves.push({ position: position([nextX, nextY]), type: "normal", possible: true });
         }
       });
     }
@@ -155,9 +155,9 @@ export class VirtualBoard {
         const nextCell = this.getCell([nextX, nextY]);
 
         if (nextCell && areOpponentPieces(nextCell, sourcePiece)) {
-          moves.push({ position: position([nextX, nextY]), type: "attack" });
+          moves.push({ position: position([nextX, nextY]), type: "attack", possible: true });
         } else if (isEmpty(nextCell)) {
-          moves.push({ position: position([nextX, nextY]), type: "normal" });
+          moves.push({ position: position([nextX, nextY]), type: "normal", possible: true });
         }
       });
     }
