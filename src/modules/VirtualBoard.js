@@ -1,5 +1,5 @@
 import { isWhite, isBlack, isEmpty, areOpponentPieces, isPawn, isBishop, isRook, isQueen, getRules, isKnight, isKing } from "./Movements.js";
-import { position, toggleColorPieces } from "./Utils.js";
+import { isInside, position, toggleColorPieces } from "./Utils.js";
 
 // const debug = (table) => console.table(JSON.parse(JSON.stringify(table)));
 
@@ -43,7 +43,7 @@ export class VirtualBoard {
 
   getCell(coords) {
     const [x, y] = coords;
-    if ((x < 0) || (y < 0) || (x > 7) || (y > 7)) return;
+    if (!isInside(x, y)) return;
     return this.board[y][x];
   }
 
@@ -71,8 +71,6 @@ export class VirtualBoard {
     console.log({ name: "Select piece", sourcePiece, col, row });
 
     if (isPawn(sourcePiece)) {
-      const [col, row] = sourceCoords;
-
       const multiplier = isWhite(sourcePiece) ? -1 : 1;
       const isInitialPosition =
         (isBlack(sourcePiece) && row === 1) ||
