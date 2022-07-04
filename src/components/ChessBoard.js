@@ -177,7 +177,7 @@ export class ChessBoard extends HTMLElement {
 
   onRightClick(ev, cell) {
     ev.preventDefault();
-    if (cell.piece) { console.log(this.getAllMoves(cell, cell.piece)); }
+    // if (cell.piece) { console.log(this.getAllMoves(cell, cell.piece)); }
   }
 
   onClick(cell) {
@@ -194,93 +194,6 @@ export class ChessBoard extends HTMLElement {
     } else if (this.stage.isTarget() && isTargetValid) this.selectTarget(cell);
   }
 
-  getAllMoves(cell, piece) {
-    const x = Number(cell.getAttribute("row"));
-    const y = Number(cell.getAttribute("col"));
-
-    const moves = [];
-
-    if (piece.isPawn()) {
-      const multiplier = piece.color === "white" ? -1 : 1;
-      const isInitialPosition = (piece.isBlack() && y === 1) || (piece.isWhite() && y === 6);
-
-      // Normal
-      const cellForward = this.getCell([x, y + (1 * multiplier)]);
-      cellForward.isEmpty() && moves.push({ position: cellForward.position, type: "normal" });
-
-      // Initial (Special movement)
-      const cellForwardInitial = this.getCell([x, y + (2 * multiplier)]);
-      if (cellForward.isEmpty() && cellForwardInitial.isEmpty() && isInitialPosition) {
-        moves.push({ position: cellForwardInitial.position, type: "initial" });
-      }
-
-      // Attacks
-      const cellLeft = this.getCell([x - 1, y + (1 * multiplier)]);
-      const cellRight = this.getCell([x + 1, y + (1 * multiplier)]);
-      const isAttackLeft = cellLeft && cellLeft.hasOpponentPiece(piece);
-      const isAttackRight = cellRight && cellRight.hasOpponentPiece(piece);
-      isAttackLeft && moves.push({ position: cellLeft.position, type: "attack" });
-      isAttackRight && moves.push({ position: cellRight.position, type: "attack" });
-    }
-
-    if (piece.isBishop() || piece.isRook() || piece.isQueen()) {
-      piece.directions.forEach(direction => {
-        const [deltaX, deltaY] = direction;
-
-        let nextX = x + deltaX;
-        let nextY = y + deltaY;
-        let nextCell = this.getCell([nextX, nextY]);
-
-        while (nextCell && nextCell.isEmpty()) {
-          moves.push({ position: nextCell.position, type: "normal" });
-
-          nextX += deltaX;
-          nextY += deltaY;
-          nextCell = this.getCell([nextX, nextY]);
-        }
-
-        if (nextCell && nextCell.hasOpponentPiece(piece)) {
-          moves.push({ position: nextCell.position, type: "attack" });
-        }
-      });
-    }
-
-    if (piece.isKnight()) {
-      piece.directions.forEach(direction => {
-        const [deltaX, deltaY] = direction;
-
-        const nextX = x + deltaX;
-        const nextY = y + deltaY;
-        const nextCell = this.getCell([nextX, nextY]);
-
-        if (nextCell && nextCell.hasOpponentPiece(piece)) {
-          moves.push({ position: nextCell.position, type: "attack" });
-        } else if (nextCell && nextCell.isEmpty()) {
-          moves.push({ position: nextCell.position, type: "normal" });
-        }
-      });
-    }
-
-    if (piece.isKing()) {
-      piece.directions.forEach(direction => {
-        const [deltaX, deltaY] = direction;
-
-        const nextX = x + deltaX;
-        const nextY = y + deltaY;
-
-        const nextCell = this.getCell([nextX, nextY]);
-
-        if (nextCell && nextCell.hasOpponentPiece(piece)) {
-          moves.push({ position: nextCell.position, type: "attack" });
-        } else if (nextCell && nextCell.isEmpty()) {
-          moves.push({ position: nextCell.position, type: "normal" });
-        }
-      });
-    }
-
-    return moves;
-  }
-
   getCell(coords) {
     const [row, col] = coords;
     return this.shadowRoot.querySelector(`[row="${row}"][col="${col}"]`);
@@ -294,11 +207,18 @@ export class ChessBoard extends HTMLElement {
       sourceCell.select();
       this.stage.next(); // to target stage
 
-      const virtualBoard = new VirtualBoard(this.toFEN());
-      const moves = virtualBoard.selectPiece(sourceCell.coords);
-      console.log(moves);
+      // Current Board Status
+      const fen = this.toFEN();
+      const virtualBoard = new VirtualBoard(fen);
+      const moves = virtualBoard.getAllMoves(sourceCell.coords);
 
-      // const moves = this.getAllMoves(sourceCell, sourcePiece);
+      moves.forEach(move => {
+        const newVirtualBoard = new VirtualBoard(fen);
+        newVirtualBoard.movePiece(sourceCell.coords, coords(move.position));
+        const newState = newVirtualBoard.board;
+        console.log({ fen, newState });
+      });
+
       this.highlightMoves(moves);
     }
   }

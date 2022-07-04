@@ -1,4 +1,4 @@
-import { isWhite, isBlack, areOpponentPieces, isPawn, isBishop, isRook, isQueen, getRules, isKnight, isKing } from "./Movements.js";
+import { isWhite, isBlack, isEmpty, areOpponentPieces, isPawn, isBishop, isRook, isQueen, getRules, isKnight, isKing } from "./Movements.js";
 import { position, toggleColorPieces } from "./Utils.js";
 
 const debug = (table) => console.table(JSON.parse(JSON.stringify(table)));
@@ -38,7 +38,7 @@ export class VirtualBoard {
 
     this.board[tX][tY] = this.board[sX][sY];
     this.board[sX][sY] = null;
-    // debug(this.board);
+    // console.log(this.board);
   }
 
   getCell(coords) {
@@ -63,12 +63,12 @@ export class VirtualBoard {
     return null;
   }
 
-  selectPiece(sourceCoords) {
+  getAllMoves(sourceCoords) {
     const [col, row] = sourceCoords;
     const sourcePiece = this.getCell(sourceCoords);
     const moves = [];
 
-    console.log({ name: "CUAK", row, col, sourcePiece });
+    console.log({ name: "Select piece", sourcePiece, col, row });
 
     if (isPawn(sourcePiece)) {
       const [col, row] = sourceCoords;
@@ -81,12 +81,12 @@ export class VirtualBoard {
       // Normal
       const normalCoords = [col, row + (1 * multiplier)];
       const cellForward = this.getCell(normalCoords);
-      cellForward === null && moves.push({ position: position(normalCoords), type: "normal" });
+      isEmpty(cellForward) && moves.push({ position: position(normalCoords), type: "normal" });
 
       // Initial (Special movement)
       const initialCoords = [col, row + (2 * multiplier)];
       const cellForwardInitial = this.getCell(initialCoords);
-      if (cellForward === null && !cellForwardInitial && isInitialPosition) {
+      if (isEmpty(cellForward) && isEmpty(cellForwardInitial) && isInitialPosition) {
         moves.push({ position: position(initialCoords), type: "initial" });
       }
 
@@ -111,7 +111,7 @@ export class VirtualBoard {
         let nextY = row + deltaY;
         let nextCell = this.getCell([nextX, nextY]);
 
-        while (nextCell === null) {
+        while (isEmpty(nextCell)) {
           moves.push({ position: position([nextX, nextY]), type: "normal" });
 
           nextX += deltaX;
@@ -137,7 +137,7 @@ export class VirtualBoard {
 
         if (nextCell && areOpponentPieces(nextCell, sourcePiece)) {
           moves.push({ position: position([nextX, nextY]), type: "attack" });
-        } else if (nextCell === null) {
+        } else if (isEmpty(nextCell)) {
           moves.push({ position: position([nextX, nextY]), type: "normal" });
         }
       });
@@ -156,7 +156,7 @@ export class VirtualBoard {
 
         if (nextCell && areOpponentPieces(nextCell, sourcePiece)) {
           moves.push({ position: position([nextX, nextY]), type: "attack" });
-        } else if (nextCell === null) {
+        } else if (isEmpty(nextCell)) {
           moves.push({ position: position([nextX, nextY]), type: "normal" });
         }
       });

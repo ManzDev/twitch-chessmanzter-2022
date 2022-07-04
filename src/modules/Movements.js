@@ -1,5 +1,4 @@
 import rules from "../data/rules.json";
-// import { position } from "./Utils.js";
 
 export const areOpponentPieces = (piece, opponent) => {
   const pieceColor = /^[a-z]$/.test(piece) ? "white" : "black";
@@ -16,5 +15,7 @@ export const isKing = (piece) => piece === "k" || piece === "K";
 
 export const isWhite = (piece) => ["p", "r", "n", "b", "q", "k"].includes(piece);
 export const isBlack = (piece) => ["P", "R", "N", "B", "Q", "K"].includes(piece);
+
+export const isEmpty = (piece) => piece === null;
 
 export const getRules = (piece) => rules[piece.toLowerCase()];
